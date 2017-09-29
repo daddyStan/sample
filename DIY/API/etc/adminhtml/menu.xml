@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Backend/etc/menu.xsd">
+    <menu>
+        <add id="DIY_API::parent" title="API" module="DIY_API" sortOrder="1" resource="DIY_API::parent"/>
+		<add id="DIY_API::menu" title="DIY MENU" module="DIY_API" sortOrder="1" parent="DIY_API::parent" action="api/menu" resource="DIY_API::menu"/>
+    </menu>
+</config>
