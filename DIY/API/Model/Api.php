@@ -1,18 +1,11 @@
 <?php
 
-/**
- * Copyright 2015 Magento. All rights reserved.
- * See COPYING.txt for license details.
- */
-
 namespace DIY\API\Model;
-
 use DIY\API\Api\ApiInterface;
 use Magento\Framework\App\Action\Context;
-use DIY\API\Model\apiMethods;
 
 /**
- * Defines the implementaiton class of the calculator service contract.
+ * Класс обработки запроса REST API
  */
 class Api implements ApiInterface
 {
@@ -31,30 +24,38 @@ class Api implements ApiInterface
     }
 
     /**
-     * Return the sum of the two numbers.
-     *
-     * @api
-     * @param int $num1 Left hand operand.
-     * @return int The sum of the two values.
+     * Метод обработки запроса REST API
+     * @param int | string $parentId Left hand operand.
+     * @return array array of menu.
      */
-    public function getmenu($parentId) {
+    public function getmenu(string $parentId) {
+        /** Определяем, что будем искать в зависимости от типа данных parantId*/
+        $parentParam = is_numeric($parentId) ? "item_id" : "menu_id";
+
+        /** Объявляем две фабричных коллекции */
         $collection = $this->_menuFactory->create()->getCollection();
         $parentCollection = $this->_menuFactory->create()->getCollection();
 
-        $collection->getSelect()
-            ->reset()
-            ->from(["s" => "simple_menu"],["s.item_id","s.name", "s.url", "s.position"])
-            ->where("s.parent_id=?", $parentId);
-
+        /** Получаем объект для вывода родителя */
         $parentCollection->getSelect()
             ->reset()
-            ->from(["s" => "simple_menu"],["s.name","s.menu_id"])
-            ->where("s.item_id=?", $parentId);
-
+            ->from(["s" => "simple_menu"],["s.item_id","s.name","s.menu_id"])
+            ->where("s.$parentParam=?", $parentId);
         $result = $parentCollection->getData();
-        $result[0]["items"] = $collection->getData();
 
-        return $result[0];
+        /** Проверяем, нашли ли родителя */
+        if($result) {
+            /** Получаем объект для вывода детей */
+            $collection->getSelect()
+                ->reset()
+                ->from(["s" => "simple_menu"], ["s.item_id", "s.name", "s.url"])
+                ->where("s.parent_id=?", $result[0]["item_id"]);
+
+            $result[0]["items"] = $collection->getData();
+        } else {
+            $result = [];
+        }
+
+        return $result;
     }
-
 }
